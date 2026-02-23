@@ -23,7 +23,18 @@ public class GlobalExceptionHandler {
     }
     @ExceptionHandler(ProviderHttpException.class)
     public ResponseEntity<ApiError> handleProviderHttp(ProviderHttpException ex) {
-        return ResponseEntity.status(ex.getStatusCode())
+
+        int sc = ex.getStatusCode();
+        if (sc == 401) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new ApiError("Token inválido o expirado (DECOLECTA_TOKEN)"));
+        }
+        if (sc >= 500) {
+            return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
+                    .body(new ApiError("Proveedor no disponible, intente más tarde"));
+        }
+
+        return ResponseEntity.status(sc)
                 .body(new ApiError(ex.getProviderMessage()));
     }
 }
